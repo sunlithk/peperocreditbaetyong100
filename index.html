@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>빼빼로데이 11.11 · 둘이서 한 개</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#c8102e; --red-d:#9c0c24; --choc:#4a2312; --choc-l:#6b3a1f;
+  --cookie:#e6b46a; --pink:#ffe3e8; --ink:#2b1a14; --white:#fff;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:"Jua","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  background:var(--red); color:var(--ink); min-height:100vh;
+  padding:24px 14px 48px;
+}
+.wrap{max-width:860px;margin:0 auto}
+header{text-align:center;color:var(--white);margin-bottom:18px}
+header h1{font-size:clamp(34px,8vw,64px);margin:0;line-height:1.1;letter-spacing:.02em}
+header p{margin:8px 0 0;font-size:clamp(15px,3.6vw,20px);opacity:.92}
+
+.stage{
+  position:relative; width:100%; height:420px; background:var(--sbg,#ffe3e8);
+  border-radius:28px; overflow:hidden; box-shadow:0 8px 0 var(--red-d);
+}
+.stage::before{ /* 바닥 */
+  content:""; position:absolute; left:0; right:0; bottom:0; height:26px; background:var(--sfl,#ffc9d3);
+}
+.stick{
+  position:absolute; display:flex; border-radius:999px; overflow:hidden; z-index:1;
+  box-shadow:0 3px 0 rgba(0,0,0,.15);
+}
+.stick.rev{flex-direction:row-reverse}
+.choc{flex:72;
+  background:
+    radial-gradient(circle at 20% 30%, #ffd6e0 0 2px, transparent 2.5px) 0 0/22px 14px,
+    radial-gradient(circle at 70% 70%, #fff 0 2px, transparent 2.5px) 7px 5px/26px 16px,
+    linear-gradient(180deg,var(--choc-l),var(--choc) 60%);
+}
+.cookie{flex:28;
+  background:
+    repeating-linear-gradient(90deg,rgba(150,90,20,.18) 0 2px,transparent 2px 7px),
+    linear-gradient(180deg,#f3cf8c,var(--cookie));
+}
+.char{
+  position:absolute; z-index:2; display:flex; flex-direction:column; align-items:center;
+  transform-origin:50% 100%; will-change:transform;
+}
+.char .pic{width:100%; flex:1; min-height:0}
+.char img{width:100%;height:100%;object-fit:contain;display:block}
+.fx{position:absolute; inset:0; width:100%; height:100%; z-index:3; pointer-events:none}
+.msg{
+  position:absolute; left:0; right:0; top:34px; text-align:center; z-index:4;
+  font-size:clamp(18px,4.6vw,28px); color:var(--red);
+  opacity:0; transform:translateY(-6px); transition:opacity .4s, transform .4s;
+}
+.msg.show{opacity:1; transform:none}
+
+.bar{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:18px 0 0}
+.bar.second{margin:12px 0 18px}
+.bar button{
+  font:inherit; font-size:20px; padding:10px 26px; border:0; border-radius:999px;
+  background:var(--white); color:var(--red); cursor:pointer; box-shadow:0 4px 0 var(--red-d);
+}
+.bar button:active{transform:translateY(3px); box-shadow:0 1px 0 var(--red-d)}
+.bar #play{min-width:132px}
+.bar button.on{background:#ffd23f; color:var(--ink)}
+.bar button.sub{background:var(--red-d); color:var(--white); box-shadow:0 4px 0 #6e0818}
+.bar button.sub.off{opacity:.6}
+.bar button:disabled{opacity:.6; cursor:default}
+.bgc{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
+.thlayer{position:absolute; inset:0; z-index:3; pointer-events:none}
+.thought{position:absolute; display:flex; align-items:center; justify-content:center; box-sizing:border-box;
+  border:2px solid rgba(255,255,255,.95); background:rgba(255,255,255,.74); border-radius:16px;
+  color:var(--ink); white-space:pre; text-align:center; pointer-events:none}
+.thought span{display:block}
+.thought i{position:absolute; box-sizing:border-box; border:2px solid rgba(255,255,255,.95); background:rgba(255,255,255,.74); border-radius:50%}
+.thought .d1{top:calc(100% + 3px); width:10px; height:10px}
+.thought .d2{top:calc(100% + 15px); width:6px; height:6px}
+.who textarea{font:inherit; font-size:15px; width:100%; min-height:92px; border:2px solid #f2b8c2; border-radius:12px; padding:8px 12px; resize:vertical}
+.hrow{display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-top:6px}
+.hrow .kao{width:auto; flex:1 1 150px; min-width:140px}
+.hl{min-width:22px; color:#000; font-weight:400}
+.note{font-size:13px; color:#8a6a62; margin-top:6px}
+.swatches{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+.sw{width:34px; height:34px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 0 2px #e9c3ca; cursor:pointer; padding:0}
+.sw.on{box-shadow:0 0 0 3px var(--red)}
+input[type=color]{width:46px; height:36px; padding:0; border:0; background:none; cursor:pointer}
+.vmsg{background:var(--white); color:var(--ink); border-radius:16px; padding:10px 14px; margin:-6px 0 16px; text-align:center; font-size:15px; line-height:1.4}
+.vmsg[hidden]{display:none}
+.result{background:var(--white); border-radius:24px; padding:16px; margin-bottom:18px; text-align:center}
+.result video{width:100%; max-height:60vh; border-radius:16px; background:#000}
+.result .acts{display:flex; gap:10px; justify-content:center; margin-top:12px}
+.result button{font:inherit; font-size:16px; padding:9px 20px; border:0; border-radius:999px; background:var(--red); color:var(--white); cursor:pointer}
+.result button.ghost{background:var(--pink); color:var(--red)}
+.result .dlbtn{font:inherit; font-size:16px; padding:9px 20px; border-radius:999px; background:var(--red); color:var(--white); text-decoration:none; display:inline-block; cursor:pointer; -webkit-tap-highlight-color:transparent}
+.result .vhint{font-size:12px; opacity:.6; margin-top:10px}
+button:focus-visible,input:focus-visible,label:focus-within{outline:3px solid #ffd23f; outline-offset:2px}
+
+.panel{
+  background:var(--white); border-radius:24px; padding:18px;
+  display:grid; grid-template-columns:1fr 1fr; gap:16px 18px;
+}
+.panel h2{margin:0 0 8px; font-size:20px; color:#000; font-weight:400}
+.who{border:2px dashed #f2b8c2; border-radius:16px; padding:12px}
+.row{display:flex; flex-direction:column; gap:6px; margin-top:10px; font-size:15px}
+input[type=text]{
+  font:inherit; font-size:17px; padding:8px 12px; border:2px solid #f2b8c2; border-radius:12px; width:100%;
+}
+.file{
+  display:inline-block; font-size:15px; background:var(--pink); color:var(--red);
+  padding:8px 14px; border-radius:12px; cursor:pointer; text-align:center;
+}
+.file input{position:absolute; opacity:0; width:1px; height:1px}
+.chk{display:flex; align-items:center; gap:8px; font-size:15px}
+.full{grid-column:1/-1}
+input[type=range]{width:100%; accent-color:var(--red)}
+.ends{display:flex; justify-content:space-between; font-size:13px; color:#8a6a62}
+.seg{display:flex; gap:8px}
+.seg label{
+  flex:1; text-align:center; padding:9px 6px; border-radius:12px; background:var(--pink);
+  cursor:pointer; font-size:15px;
+}
+.seg input{position:absolute; opacity:0}
+.seg label:has(input:checked){background:var(--red); color:var(--white)}
+.val{color:var(--red)}
+@media (max-width:620px){
+  .panel{grid-template-columns:1fr}
+  .stage{height:300px}
+  .bar button{font-size:15px; padding:9px 16px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>빼빼로데이 11.11</h1>
+    <p>빼빼로 한 개, 둘이서 끝까지</p>
+  </header>
+
+  <div class="stage" id="stage">
+    <canvas class="bgc" id="bgc"></canvas>
+    <div class="msg" id="msg"></div>
+    <div class="thlayer" id="thA"></div>
+    <div class="thlayer" id="thB"></div>
+    <canvas class="fx" id="fx"></canvas>
+    <div class="stick" id="stick"><div class="choc"></div><div class="cookie"></div></div>
+    <div class="char" id="charA"><div class="pic"><img id="imgA" alt=""></div></div>
+    <div class="char" id="charB"><div class="pic"><img id="imgB" alt=""></div></div>
+  </div>
+
+  <div class="bar">
+    <button id="play">▶ 재생</button>
+    <button id="reset">↺ 처음으로</button>
+  </div>
+  <div class="bar second">
+    <button id="snd" class="sub">🔊 소리 켜짐</button>
+    <button id="shot" class="sub">📷 사진 저장</button>
+    <button id="vid" class="sub">🎬 영상 저장</button>
+  </div>
+  <div class="vmsg" id="vst" hidden></div>
+  <div class="result" id="result" hidden>
+    <video id="rv" controls playsinline></video>
+    <div class="acts"><a id="rsave" class="dlbtn" href="#" download="pepero-day.mp4" role="button">⬇ 영상 다운로드</a><button id="rclose" class="ghost">닫기</button></div>
+    <div class="vhint">다운로드가 안 되면 위 영상을 길게 눌러(또는 우클릭) 저장하세요.</div>
+  </div>
+
+  <div class="panel">
+    <div class="full">
+      <h2>캐릭터 하트 색</h2>
+      <div class="hrow"><b class="hl">A</b><div class="swatches" id="swA"><input type="color" id="hcA" value="#ff5d8f" aria-label="A 하트 색 직접 고르기"></div><input type="text" id="kaoA" class="kao" placeholder="카오모지 (선택)" maxlength="14" aria-label="A 하트 카오모지"></div>
+      <div class="hrow"><b class="hl">B</b><div class="swatches" id="swB"><input type="color" id="hcB" value="#7aa8ff" aria-label="B 하트 색 직접 고르기"></div><input type="text" id="kaoB" class="kao" placeholder="카오모지 (선택)" maxlength="14" aria-label="B 하트 카오모지"></div>
+      <div class="note">색을 고르면 기본 하트 캐릭터로 돌아가요. (이미지를 올린 경우 이미지가 우선)</div>
+    </div>
+
+    <div class="full">
+      <h2>배경 색</h2>
+      <div class="swatches" id="sws"><input type="color" id="bgPick" value="#ffe3e8" aria-label="배경 색 직접 고르기"></div>
+    </div>
+
+    <div class="who">
+      <h2>왼쪽 캐릭터 A</h2>
+      <input type="text" id="inA" value="A" maxlength="12" aria-label="A 이름">
+      <div class="row">
+        <label class="file">이미지 올리기<input type="file" id="fileA" accept="image/*"></label>
+        <label class="chk"><input type="checkbox" id="flipA"> 좌우 반전</label>
+      </div>
+      <div class="row"><label for="tiA">속마음 (한 줄에 하나, 3~5개)</label><textarea id="tiA"></textarea></div>
+    </div>
+    <div class="who">
+      <h2>오른쪽 캐릭터 B</h2>
+      <input type="text" id="inB" value="B" maxlength="12" aria-label="B 이름">
+      <div class="row">
+        <label class="file">이미지 올리기<input type="file" id="fileB" accept="image/*"></label>
+        <label class="chk"><input type="checkbox" id="flipB"> 좌우 반전</label>
+      </div>
+      <div class="row"><label for="tiB">속마음 (한 줄에 하나, 3~5개)</label><textarea id="tiB"></textarea></div>
+    </div>
+
+    <div class="full">
+      <h2>누가 더 많이 먹을까? <span class="val" id="shareVal"></span></h2>
+      <input type="range" id="share" min="10" max="90" value="50" aria-label="A가 먹는 비율">
+      <div class="ends"><span>B가 더 많이</span><span>A가 더 많이</span></div>
+    </div>
+
+    <div>
+      <h2>속도 <span class="val" id="spdVal"></span></h2>
+      <input type="range" id="spd" min="0.5" max="3" step="0.1" value="1" aria-label="속도">
+      <div class="ends"><span>천천히</span><span>빠르게</span></div>
+    </div>
+
+    <div>
+      <h2>초코 부분은 어느 쪽?</h2>
+      <div class="seg">
+        <label><input type="radio" name="choc" value="A" checked>A 쪽</label>
+        <label><input type="radio" name="choc" value="B">B 쪽</label>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ===== GitHub에 이미지를 같이 올렸다면 여기에 경로를 적으세요 (예: 'images/a.png') =====
+   비워 두면 기본 캐릭터가 나오고, 화면에서 직접 이미지를 올려도 됩니다. */
+const DEFAULT_IMG = { A: '', B: '' };
+const DEFAULT_NAME = { A: 'A', B: 'B' };
+
+const $ = id => document.getElementById(id);
+const stage = $('stage'), stick = $('stick'), msg = $('msg'), fx = $('fx'), fxc = fx.getContext('2d'), bgc = $('bgc');
+const el = { A: $('charA'), B: $('charB') };
+const REACH = 0.1, CHOC = 0.72;
+
+const heartCol = { A:'#ff5d8f', B:'#7aa8ff' }, custom = { A:false, B:false }, kao = { A:'', B:'' };
+function mix(hex, to, t){
+  const a = parseInt(hex.slice(1), 16), b = parseInt(to.slice(1), 16), m = (x, y) => Math.round(x + (y - x) * t);
+  return '#' + [m(a >> 16, b >> 16), m((a >> 8) & 255, (b >> 8) & 255), m(a & 255, b & 255)].map(v => v.toString(16).padStart(2, '0')).join('');
+}
+function heartImg(col, face){
+  const hi = mix(col, '#ffffff', .4), lo = shade(col, -.18), chars = [...(face || '')];
+  const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const fs = Math.max(9, Math.min(26, 74 / (chars.length * .62 || 1)));
+  const faceSvg = chars.length ? `<text x="50" y="42" font-size="${fs}" text-anchor="middle" dominant-baseline="central" fill="#2b1a14" font-family="'Apple SD Gothic Neo','Noto Sans CJK KR','Malgun Gothic',sans-serif">${esc(face)}</text>` : '';
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="90" viewBox="0 0 100 90"><defs><radialGradient id="g" cx="35%" cy="28%" r="85%"><stop offset="0" stop-color="${hi}"/><stop offset=".55" stop-color="${col}"/><stop offset="1" stop-color="${lo}"/></radialGradient></defs>
+  <path d="M50 88 C12 62 0 44 0 28 C0 10 14 2 26 2 C38 2 47 10 50 20 C53 10 62 2 74 2 C86 2 100 10 100 28 C100 44 88 62 50 88Z" fill="url(#g)"/>
+  <ellipse cx="25" cy="16" rx="11" ry="6" fill="#fff" opacity=".55" transform="rotate(-30 25 16)"/>
+  ${faceSvg}</svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+function refreshHeart(k){ if (!custom[k]) $('img' + k).src = heartImg(heartCol[k], kao[k]); }
+// 배경이 투명한 이미지는 비어 있는 가장자리를 잘라내서 그림 부분만 꽉 차게 사용
+function cropTransparent(url){
+  return new Promise(res => {
+    const im = new Image();
+    im.onload = () => {
+      try {
+        const sc = Math.min(1, 1600 / Math.max(im.naturalWidth, im.naturalHeight));
+        const w = Math.max(1, Math.round(im.naturalWidth * sc)), h = Math.max(1, Math.round(im.naturalHeight * sc));
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0, w, h);
+        const d = g.getImageData(0, 0, w, h).data;
+        let x0 = w, y0 = h, x1 = -1, y1 = -1;
+        for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 12){
+          if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+        }
+        if (x1 < 0) return res(url);
+        const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+        if (bw === w && bh === h && sc === 1) return res(url);
+        const o = document.createElement('canvas'); o.width = bw; o.height = bh;
+        o.getContext('2d').drawImage(c, x0, y0, bw, bh, 0, 0, bw, bh);
+        o.toBlob(b => res(b ? URL.createObjectURL(b) : url), 'image/png');
+      } catch (e){ res(url); }
+    };
+    im.onerror = () => res(url); im.src = url;
+  });
+}
+const flip = { A:false, B:false };
+for (const k of ['A','B']){
+  if (DEFAULT_IMG[k]){ custom[k] = true; cropTransparent(DEFAULT_IMG[k]).then(u => { $('img' + k).src = u; }); }
+  else refreshHeart(k);
+}
+$('inA').value = DEFAULT_NAME.A; $('inB').value = DEFAULT_NAME.B;
+
+const S = { p:0, k:0, playing:false, last:0, t:0, popped:false, bob:0, tilt:0, cAcc:0, cNext:0, hop:0, hopT:0, th:{A:null,B:null}, lay:{}, kissSound:false, acc:{A:0,B:0} };
+let bgColor = '#ffe3e8', floorColor = '#ffc9d3', msgColor = '#c8102e';
+const thoughts = { A:[], B:[] };
+const DEFAULT_THOUGHTS = {
+  A: ['생각보다 가깝다…', '초코 진짜 달다', '얼굴 안 빨개졌지?', '이제 거의 다 왔다'],
+  B: ['두근두근…', '너무 빨리 먹지 마', '눈은 어디 둬야 해', '곧 닿겠다']
+};
+const baseSec = () => Math.max(8, 2.4 * Math.max(thoughts.A.length, thoughts.B.length));
+let W, H, cw, ch, xL, xR, len, m, chocSide = 'A', particles = [], looping = false, dpr = 1;
+const FLOOR = 26;
+
+/* ---------- 레이아웃 ---------- */
+function metrics(){
+  W = stage.clientWidth; H = stage.clientHeight;
+  cw = Math.min(150, W * 0.22);
+  xL = cw * (1 - REACH); xR = W - xL; len = xR - xL;
+  ch = Math.min(H - FLOOR - 130, cw * 1.35);
+  for (const k of ['A','B']){ el[k].style.width = cw + 'px'; el[k].style.height = ch + 'px'; el[k].style.top = (H - FLOOR - ch + 14) + 'px'; }
+  const sh = Math.max(20, cw * 0.15);
+  stick.style.height = sh + 'px'; stick.style.left = xL + 'px'; stick.style.width = len + 'px';
+  stick.style.top = (H - FLOOR + 14 - ch * .5 - sh / 2 - 40) + 'px';
+  dpr = window.devicePixelRatio || 1;
+  fx.width = W * dpr; fx.height = H * dpr;
+  bgc.width = W * dpr; bgc.height = H * dpr; paintBg();
+}
+function updateLabels(){
+  const a = +$('share').value; m = a / 100;
+  $('shareVal').textContent = `${$('inA').value || 'A'} ${a}% · ${$('inB').value || 'B'} ${100 - a}%`;
+  $('spdVal').textContent = (+$('spd').value).toFixed(1) + '배속';
+  stick.classList.toggle('rev', chocSide === 'B');
+}
+const edges = () => [xL + len * m * S.p, xR - len * (1 - m) * S.p];
+
+/* ---------- 파티클 (부스러기 · 하트) ---------- */
+function isChoc(e){ const f = (e - xL) / len; return chocSide === 'A' ? f < CHOC : f > 1 - CHOC; }
+function crumb(side, e){
+  const choc = isChoc(e), cols = choc ? ['#4a2312','#6b3a1f','#8a5230'] : ['#e6b46a','#f3cf8c','#c98f45'];
+  const dir = side === 'A' ? -1 : 1, yc = stick.offsetTop + stick.offsetHeight / 2;
+  particles.push({ type:'c', x:e, y:yc + (Math.random() - .5) * stick.offsetHeight * .6,
+    vx:dir * (20 + Math.random() * 110) + (Math.random() - .5) * 40, vy:-30 - Math.random() * 150,
+    r:1.2 + Math.random() * 2.6, rot:Math.random() * 6, vr:(Math.random() - .5) * 12,
+    life:0, max:.9 + Math.random() * .7, col:cols[Math.random() * 3 | 0] });
+}
+function hearts(x){
+  const yc = stick.offsetTop + stick.offsetHeight / 2;
+  for (let i = 0; i < 10; i++) particles.push({ type:'h', x:x + (Math.random() - .5) * 20, y:yc, vx:(Math.random() - .5) * 90,
+    vy:-70 - Math.random() * 60, r:16 + Math.random() * 14, life:-i * .07, max:1.6, ch:['💗','💖','💕','❤️'][i % 4] });
+}
+function stepParticles(dt){
+  for (const q of particles){
+    q.life += dt; if (q.life < 0) continue;
+    q.x += q.vx * dt; q.y += q.vy * dt;
+    if (q.type === 'c'){ q.vy += 520 * dt; q.rot += q.vr * dt; const fl = H - FLOOR + 10; if (q.y > fl){ q.y = fl; q.vy = 0; q.vx *= .5; q.vr = 0; } }
+    else q.vx *= .98;
+  }
+  particles = particles.filter(q => q.life < q.max);
+}
+function drawParticles(c){
+  for (const q of particles){
+    if (q.life < 0) continue;
+    const a = Math.max(0, 1 - Math.pow(q.life / q.max, 2));
+    c.save(); c.globalAlpha = a; c.translate(q.x, q.y);
+    if (q.type === 'c'){ c.rotate(q.rot); c.fillStyle = q.col; c.fillRect(-q.r, -q.r * .7, q.r * 2, q.r * 1.4); }
+    else { const sc = .5 + Math.min(1, q.life / .5) * .9; c.font = `${q.r * sc}px sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(q.ch, 0, 0); }
+    c.restore();
+  }
+}
+
+/* ---------- 소리 ---------- */
+let ac = null, master = null, recDest = null, soundOn = true;
+function initAudio(){
+  if (!ac){
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    ac = new AC(); master = ac.createGain(); master.gain.value = .9; master.connect(ac.destination);
+    if (ac.createMediaStreamDestination){ recDest = ac.createMediaStreamDestination(); master.connect(recDest); }
+  }
+  if (ac.state === 'suspended'){ try { const r = ac.resume(); if (r && r.catch) r.catch(() => {}); } catch (e){} }
+  loadSounds();
+}
+
+/* ---------- 효과음 파일 (crunch.mp3 / kiss.mp3 를 한 입 단위로 잘라 내장) ---------- */
+const SND_CRUNCH = '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';
+const SND_KISS = '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';
+const CRUNCH_CLIPS = [[0, 0.40], [0.42, 0.44]];   // [시작초, 길이초]
+let crunchBuf = null, kissBuf = null, sndReady = null;
+function b64ToBuf(b64){ const bin = atob(b64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; }
+function decodeBuf(b64){
+  return new Promise((res, rej) => {
+    try { const p = ac.decodeAudioData(b64ToBuf(b64), res, rej); if (p && p.then) p.then(res, rej); } catch (e){ rej(e); }
+  });
+}
+function loadSounds(){
+  if (sndReady || !ac) return sndReady;
+  sndReady = Promise.all([
+    decodeBuf(SND_CRUNCH).then(b => { crunchBuf = b; }),
+    decodeBuf(SND_KISS).then(b => { kissBuf = b; })
+  ]).catch(() => {});
+  return sndReady;
+}
+const REC_SOUND_DELAY = 0;   // (예비용 실시간 녹화에서만 사용) 소리를 이 초만큼 늦춤
+let offl = null;             // 영상 저장 중이면 { t:현재 프레임 시각, ev:[소리 목록] } — 소리를 바로 내지 않고 시각만 기록
+function schedClip(c, dest, t, buf, offset, dur, gain, pan, fade, rate){
+  const src = c.createBufferSource(); src.buffer = buf; src.playbackRate.value = rate;
+  const real = dur / rate, gn = c.createGain(); gn.gain.setValueAtTime(gain, t);
+  const f = Math.min(fade, real * .4); gn.gain.setValueAtTime(gain, t + real - f); gn.gain.linearRampToValueAtTime(0, t + real);
+  src.connect(gn);
+  if (pan && c.createStereoPanner){ const pn = c.createStereoPanner(); pn.pan.value = pan; gn.connect(pn); pn.connect(dest); } else gn.connect(dest);
+  src.start(t, offset, dur);
+}
+function emit(cl){
+  if (offl){ cl.t = offl.t; offl.ev.push(cl); return; }
+  if (!ac) return;
+  const buf = cl.kind === 'c' ? crunchBuf : kissBuf; if (!buf) return;
+  const t = ac.currentTime + (rec && !rec.offline ? REC_SOUND_DELAY : 0);
+  schedClip(ac, master, t, buf, cl.off, cl.dur || buf.duration, cl.gain, cl.pan, cl.fade, cl.rate);
+}
+let lastClip = -1;
+function crunch(side, share){
+  if (!soundOn) return;
+  let i; do { i = Math.random() * CRUNCH_CLIPS.length | 0; } while (i === lastClip && CRUNCH_CLIPS.length > 1);
+  lastClip = i; const [o, dur] = CRUNCH_CLIPS[i];
+  // 같은 소리가 반복돼도 단조롭지 않게 음높이·크기를 살짝 랜덤으로
+  const rate = .92 + Math.random() * .16, vol = (.55 + share * .35) * (.8 + Math.random() * .25);
+  emit({ kind:'c', off:o, dur, gain:vol, pan: side === 'A' ? -.3 : .3, fade:.06, rate });
+}
+function kissSound(){
+  if (!soundOn) return;
+  emit({ kind:'k', off:0, dur:0, gain:2.4, pan:0, fade:.15, rate:1 });
+}
+
+/* ---------- 속마음 말풍선 ---------- */
+function readThoughts(){
+  for (const k of ['A','B'])
+    thoughts[k] = $('ti' + k).value.split(/[\/\n]+/).map(x => x.trim()).filter(Boolean).slice(0, 6).map(x => x.slice(0, 30));
+  S.lay = {};
+}
+function wrapLines(text, maxW, font){
+  fxc.font = font; const lines = []; let cur = '';
+  const fits = x => fxc.measureText(x).width <= maxW;
+  for (const w of text.split(/\s+/)){
+    const cand = cur ? cur + ' ' + w : w;
+    if (fits(cand)){ cur = cand; continue; }
+    if (cur) lines.push(cur);
+    cur = '';
+    if (fits(w)){ cur = w; continue; }
+    for (const chr of w){ if (!fits(cur + chr)){ lines.push(cur); cur = chr; } else cur += chr; }
+  }
+  if (cur) lines.push(cur);
+  return lines.slice(0, 3);
+}
+function thoughtLayout(k, i){
+  const text = thoughts[k][i], key = `${W}|${text}`, id = k + i;
+  if (S.lay[id] && S.lay[id].key === key) return S.lay[id];
+  const fs = Math.max(12, Math.min(15, W * .034)), lh = fs * 1.35, font = `${fs}px Jua, sans-serif`;
+  const lines = wrapLines(text, Math.min(cw * 1.45, 200) - 24, font);
+  fxc.font = font; const tw = Math.max(...lines.map(l => fxc.measureText(l).width));
+  return S.lay[id] = { key, lines, fs, lh, font, w: Math.ceil(tw) + 24, h: Math.ceil(lines.length * lh) + 14 };
+}
+const GAP = 6;
+const easeBack = q => { const c1 = 1.70158; return 1 + (c1 + 1) * Math.pow(q - 1, 3) + c1 * Math.pow(q - 1, 2); };
+function makeBubble(){
+  const d = document.createElement('div'); d.className = 'thought';
+  d.innerHTML = '<span></span><i class="d1"></i><i class="d2"></i>'; return d;
+}
+// 메신저처럼 쌓이는 속마음: 새 말풍선이 뿅 나오면 이전 말풍선은 위로 밀리며 점점 투명해짐
+function updateThoughts(k){
+  const layer = $('th' + k), n = thoughts[k].length, p = S.p, items = [];
+  const endFade = S.popped ? Math.max(0, 1 - S.hopT / .8) : 1;
+  if (n && p >= .04 && endFade > 0){
+    const w = .9 / n, x = (p - .04) / w, j = Math.min(n - 1, Math.floor(x)), u = x >= n ? 1 : x - Math.floor(x);
+    const pe = Math.min(1, u / .14), pS = 1 - (1 - pe) * (1 - pe);
+    const first = Math.max(0, j - 5), L = i => thoughtLayout(k, i);
+    const cx = parseFloat(el[k].style.left) + cw / 2;
+    const yb = parseFloat(el[k].style.top) - 18 + Math.sin(S.t * 4 + (k === 'A' ? 0 : 2)) * 2;
+    const shift = { [j]: 0 };
+    for (let i = j - 1; i >= first; i--) shift[i] = shift[i + 1] + (L(i + 1).h + GAP) * (i + 1 === j ? pS : 1);
+    const i0 = Math.max(0, j - 4);
+    const f = shift[i0] > 0 ? Math.max(.35, Math.min(1, (yb - 24 - L(i0).h) / shift[i0])) : 1;   // 공간이 모자라면 겹쳐서 쌓음
+    for (let i = first; i <= j; i++){
+      const l = L(i), age = i === j ? 0 : (j - i) - 1 + pe;
+      let al = Math.max(.15, 1 - .3 * age) * Math.max(0, Math.min(1, 5 - age)), sc = 1;
+      if (i === j){ al = Math.min(1, pe * 2); sc = easeBack(pe); }
+      let x0 = k === 'A' ? cx + cw * .25 - l.w : cx - cw * .25;
+      x0 = Math.max(4, Math.min(W - l.w - 4, x0));
+      items.push({ ...l, x:x0, y:yb - shift[i] * f - l.h, tx:Math.max(14, Math.min(l.w - 14, cx - x0)), sc, al:al * endFade, tail:i === j });
+    }
+  }
+  S.th[k] = items;
+  while (layer.children.length < items.length) layer.appendChild(makeBubble());
+  [...layer.children].forEach((d, idx) => {
+    const t = items[idx];
+    if (!t){ d.style.display = 'none'; return; }
+    d.style.display = 'flex';
+    d.firstElementChild.textContent = t.lines.join('\n');
+    Object.assign(d.style, { left:t.x + 'px', top:t.y + 'px', width:t.w + 'px', height:t.h + 'px', fontSize:t.fs + 'px', lineHeight:t.lh + 'px',
+      opacity:t.al, transformOrigin:`${t.tx}px ${t.h + 14}px`, transform:`scale(${t.sc})` });
+    const d1 = d.querySelector('.d1'), d2 = d.querySelector('.d2');
+    d1.style.display = d2.style.display = t.tail ? 'block' : 'none';
+    d1.style.left = (t.tx - 7) + 'px'; d2.style.left = (t.tx - 5) + 'px';
+  });
+}
+function drawBubble(c, k){
+  for (const t of S.th[k] || []){
+    const ox = t.x + t.tx, oy = t.y + t.h + 14;
+    c.save(); c.globalAlpha = t.al; c.translate(ox, oy); c.scale(t.sc, t.sc); c.translate(-ox, -oy);
+    c.fillStyle = 'rgba(255,255,255,.74)'; c.strokeStyle = 'rgba(255,255,255,.95)'; c.lineWidth = 2;
+    rr(c, t.x + 1, t.y + 1, t.w - 2, t.h - 2, 15); c.fill(); c.stroke();
+    if (t.tail) for (const [dy, r] of [[6, 4], [16, 2]]){ c.beginPath(); c.arc(ox, t.y + t.h + dy, r, 0, 7); c.fill(); c.stroke(); }
+    c.fillStyle = '#2b1a14'; c.font = t.font; c.textAlign = 'center'; c.textBaseline = 'middle';
+    t.lines.forEach((l, i) => c.fillText(l, t.x + t.w / 2, t.y + 7 + t.lh * (i + .5)));
+    c.restore();
+  }
+}
+
+/* ---------- 화면 그리기 ---------- */
+function render(){
+  const [eA, eB] = edges(), p = S.p, k = S.k;
+  stick.style.clipPath = `inset(-6px ${len * (1 - m) * p}px -6px ${len * m * p}px)`;
+  stick.style.visibility = p >= 1 ? 'hidden' : 'visible';
+  const eating = S.playing && p < 1;
+  S.bob = eating ? -Math.abs(Math.sin(S.t * 11)) * 5 : 0; S.tilt = 0;
+  const ht = S.hopT;   // 뽀뽀 순간: 이미지만 폴짝 두 번 (이름은 그대로)
+  S.hop = (S.popped && ht < .64) ? Math.abs(Math.sin(ht / .32 * Math.PI)) * 18 * (1 - ht / .64 * .4) : 0;
+  const rc = cw * REACH * (1 - p);   // 끝에서는 0 → 두 이미지가 딱 붙음
+  el.A.style.left = (eA - cw + rc) + 'px';
+  el.B.style.left = (eB - rc) + 'px';
+  el.A.style.transform = `translateY(${S.bob}px)`;
+  el.B.style.transform = `translateY(${S.bob}px)`;
+  el.A.firstElementChild.style.transform = el.B.firstElementChild.style.transform = `translateY(${-S.hop}px)`;
+  $('imgA').style.transform = flip.A ? 'scaleX(-1)' : '';
+  $('imgB').style.transform = flip.B ? 'scaleX(-1)' : '';
+  // 이미지를 서로 마주 보는 가장자리에 붙여서, 끝에서 이미지끼리 딱 맞닿게 함
+  $('imgA').style.objectPosition = flip.A ? 'left center' : 'right center';
+  $('imgB').style.objectPosition = flip.B ? 'right center' : 'left center';
+  updateThoughts('A'); updateThoughts('B');
+  if (k >= 1 && !S.popped){ S.popped = true; msg.textContent = `${$('inA').value || 'A'} 💋 ${$('inB').value || 'B'}  해피 빼빼로데이!`; hearts(eA); kissSound(); }
+  msg.classList.toggle('show', k >= 1);
+  fxc.setTransform(dpr, 0, 0, dpr, 0, 0); fxc.clearRect(0, 0, W, H); drawParticles(fxc);
+  if (rec) drawFrame(rec.ctx, rec.sc);
+}
+
+/* ---------- 재생 루프 ---------- */
+function simStep(dt){
+  const spd = +$('spd').value;
+  if (S.playing){
+    S.t += dt;
+    if (S.p < 1){
+      S.p = Math.min(1, S.p + dt * spd / baseSec());
+      const [eA, eB] = edges();
+      for (const [side, e, share] of [['A', eA, m], ['B', eB, 1 - m]]){
+        S.acc[side] += dt * spd * 90 * share;           // 많이 먹는 쪽에 부스러기가 더 많이
+        while (S.acc[side] >= 1 && particles.length < 500){ S.acc[side]--; crumb(side, e); }
+      }
+      S.cAcc += dt * Math.sqrt(spd);
+      if (S.cAcc >= S.cNext){
+        crunch(Math.random() < m ? 'A' : 'B', m);
+        S.cAcc = 0; S.cNext = .65 + Math.random() * .45;
+      }
+    }
+    if (S.p >= 1){ S.k = 1; S.playing = false; setPlayBtn(false); }
+  }
+  if (S.popped) S.hopT += dt;
+  stepParticles(dt); render();
+}
+function tick(now){
+  if (offl){ looping = false; return; }          // 영상 저장 중에는 따로 계산하므로 실시간 루프는 멈춤
+  const dt = Math.min(rec ? .25 : .05, (now - S.last) / 1000); S.last = now;
+  const was = S.playing;
+  simStep(dt);
+  if (rec && was && !S.playing) rec.holdUntil = now + 1500;
+  const holding = rec && (rec.holdUntil === 0 || now < rec.holdUntil);
+  if (S.playing || particles.length || holding || (S.popped && S.hopT < .9)){ requestAnimationFrame(tick); }
+  else { looping = false; if (rec) finishRec(); }
+}
+function kick(){ if (!looping){ looping = true; S.last = performance.now(); requestAnimationFrame(tick); } }
+function setPlayBtn(on){ $('play').textContent = on ? '❚❚ 정지' : '▶ 재생'; $('play').classList.toggle('on', on); }
+function start(){
+  if (S.p >= 1 && S.k >= 1) reset();
+  if (S.playing) return;
+  initAudio(); S.playing = true; S.cAcc = 0; S.cNext = 0;
+  setPlayBtn(true); kick();
+}
+function pause(){ if (!S.playing) return; S.playing = false; setPlayBtn(false); if (rec) abortRec(); }
+function reset(){
+  if (rec) abortRec();
+  S.playing = false; S.p = 0; S.k = 0; S.popped = false; S.hopT = 0; S.t = 0; particles = [];
+  setPlayBtn(false); render();
+}
+
+/* ---------- 사진 · 영상 저장 (캔버스에 장면을 다시 그려서 저장) ---------- */
+function rr(c, x, y, w, h, r){ c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+/* ---------- 배경: 빼빼로 패턴 + 리본 ---------- */
+const lumOf = hex => { const n = parseInt(hex.slice(1), 16); return (.299 * (n >> 16) + .587 * ((n >> 8) & 255) + .114 * (n & 255)) / 255; };
+function heart(g, x, y, s){
+  g.beginPath(); g.moveTo(x, y + s * .35);
+  g.bezierCurveTo(x - s * .9, y - s * .25, x - s * .4, y - s * .85, x, y - s * .35);
+  g.bezierCurveTo(x + s * .4, y - s * .85, x + s * .9, y - s * .25, x, y + s * .35); g.fill();
+}
+function peperoMini(g, x, y, len, wid, rot, pal){
+  g.save(); g.translate(x, y); g.rotate(rot);
+  g.fillStyle = pal.cookie; rr(g, -len / 2, -wid * .3, len * .38, wid * .6, wid * .3); g.fill();
+  g.fillStyle = pal.choc; rr(g, -len / 2 + len * .3, -wid / 2, len * .7, wid, wid / 2); g.fill();
+  g.fillStyle = pal.spr;
+  [[.45, -.15], [.6, .15], [.75, -.12], [.9, .12]].forEach(([fx_, fy]) => { g.beginPath(); g.arc(-len / 2 + len * fx_, wid * fy, wid * .09, 0, 7); g.fill(); });
+  g.restore();
+}
+const bdCache = new Map();
+function patternBitmap(sc){
+  const key = `${W}|${H}|${ch}|${sc}|${bgColor}`;
+  if (bdCache.has(key)) return bdCache.get(key);
+  if (bdCache.size > 4) bdCache.clear();
+  const cv = document.createElement('canvas'); cv.width = Math.round(W * sc); cv.height = Math.round(H * sc);
+  const g = cv.getContext('2d'); g.scale(sc, sc);
+  const pal = lumOf(bgColor) < .45
+    ? { choc:'#d79a6c', cookie:'#f0cf9a', spr:'#ffffff', heart:'#ff9fb5' }
+    : { choc:'#6b3a1f', cookie:'#d9a55a', spr:'#ffd6e0', heart:'#ff7d96' };
+  const sp = Math.max(44, Math.min(72, W / 9)), len = sp * .66, wid = Math.max(6, sp * .12), rowH = sp * .8;
+  for (let r = 0, y = rowH * .5; y < H + rowH; r++, y += rowH){
+    const off = (r % 2) * sp / 2;
+    for (let i = -1, x = -sp; x < W + sp; i++, x += sp){
+      peperoMini(g, x + off + sp / 2, y, len, wid, ((r + i) % 2 ? 1 : -1) * .56, pal);
+      g.fillStyle = pal.heart; heart(g, x + off, y, sp * .12);
+    }
+  }
+  // 아래로 내려갈수록 투명하게 (캐릭터가 있는 구간은 거의 완전 투명)
+  const chTop = H - FLOOR - ch + 14, ft = Math.max(.15, Math.min(.9, chTop / H));
+  const gr = g.createLinearGradient(0, 0, 0, H);
+  gr.addColorStop(0, 'rgba(0,0,0,.5)'); gr.addColorStop(ft * .55, 'rgba(0,0,0,.26)');
+  gr.addColorStop(ft, 'rgba(0,0,0,.05)'); gr.addColorStop(Math.min(1, ft + .15), 'rgba(0,0,0,.02)'); gr.addColorStop(1, 'rgba(0,0,0,.02)');
+  g.globalCompositeOperation = 'destination-in'; g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  bdCache.set(key, cv); return cv;
+}
+function drawRibbon(c){
+  const rh = Math.max(14, Math.min(22, W * .035)), dark = '#b01e36';
+  const g = c.createLinearGradient(0, 0, 0, rh); g.addColorStop(0, '#ee4a62'); g.addColorStop(1, '#e0314b');
+  c.fillStyle = g; c.fillRect(0, 0, W, rh);
+  c.fillStyle = dark; c.fillRect(0, rh - 1.5, W, 1.5);
+  c.save(); c.strokeStyle = 'rgba(255,255,255,.75)'; c.lineWidth = 1.5; c.setLineDash([5, 4]);
+  c.beginPath(); c.moveTo(0, rh * .5); c.lineTo(W, rh * .5); c.stroke(); c.restore();
+  const s = rh * 1.1;
+  c.save(); c.translate(W * .14, rh * .5);
+  c.fillStyle = '#c9253f';
+  for (const d of [-1, 1]){
+    c.save(); c.rotate(d * .28); c.beginPath();
+    c.moveTo(-s * .18, 0); c.lineTo(s * .18, 0); c.lineTo(s * .26, s * 2); c.lineTo(0, s * 1.65); c.lineTo(-s * .26, s * 2); c.closePath(); c.fill(); c.restore();
+  }
+  for (const d of [-1, 1]){
+    c.save(); c.scale(d, 1); c.fillStyle = '#e0314b'; c.strokeStyle = dark; c.lineWidth = 1.2;
+    c.beginPath(); c.moveTo(0, 0); c.bezierCurveTo(s * .4, -s, s * 1.5, -s * .9, s * 1.45, 0); c.bezierCurveTo(s * 1.5, s * .9, s * .4, s, 0, 0); c.fill(); c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.25)'; c.beginPath(); c.ellipse(s * .85, -s * .3, s * .38, s * .12, -.2, 0, 7); c.fill();
+    c.restore();
+  }
+  c.fillStyle = '#f0566d'; c.strokeStyle = dark; c.beginPath(); c.arc(0, 0, s * .3, 0, 7); c.fill(); c.stroke();
+  c.restore();
+}
+function drawBackdrop(c, sc){ c.drawImage(patternBitmap(sc), 0, 0, W, H); drawRibbon(c); }
+function paintBg(){
+  const c = bgc.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H); drawBackdrop(c, dpr);
+}
+
+function drawFrame(c, sc = dpr){
+  c.fillStyle = bgColor; c.fillRect(0, 0, W, H);
+  c.fillStyle = floorColor; c.fillRect(0, H - FLOOR, W, FLOOR);
+  drawBackdrop(c, sc);
+  if (S.p < 1){
+    const [eA, eB] = edges(), top = stick.offsetTop, hh = stick.offsetHeight;
+    c.save(); c.beginPath(); c.rect(eA, top - 6, eB - eA, hh + 12); c.clip();
+    c.fillStyle = 'rgba(0,0,0,.15)'; rr(c, xL, top + 3, len, hh, hh / 2); c.fill();   // 그림자
+    rr(c, xL, top, len, hh, hh / 2); c.clip();
+    const cl = len * CHOC, chocX = chocSide === 'A' ? xL : xR - cl, ckX = chocSide === 'A' ? xL + cl : xL, ckW = len - cl;
+    let g = c.createLinearGradient(0, top, 0, top + hh); g.addColorStop(0, '#6b3a1f'); g.addColorStop(.6, '#4a2312'); g.addColorStop(1, '#4a2312');
+    c.fillStyle = g; c.fillRect(chocX, top, cl, hh);
+    g = c.createLinearGradient(0, top, 0, top + hh); g.addColorStop(0, '#f3cf8c'); g.addColorStop(1, '#e6b46a');
+    c.fillStyle = g; c.fillRect(ckX, top, ckW, hh);
+    // 초코 토핑(스프링클) — CSS 배경과 같은 패턴
+    c.save(); c.beginPath(); c.rect(chocX, top, cl, hh); c.clip();
+    const dots = (tw, th, ox, oy, fx_, fy_, col) => {
+      c.fillStyle = col;
+      for (let y = oy - th; y < hh + th; y += th) for (let x = ox - tw; x < cl + tw; x += tw){
+        c.beginPath(); c.arc(chocX + x + tw * fx_, top + y + th * fy_, 2, 0, 7); c.fill();
+      }
+    };
+    dots(22, 14, 0, 0, .2, .3, '#ffd6e0');
+    dots(26, 16, 7, 5, .7, .7, '#ffffff');
+    c.restore();
+    // 쿠키 줄무늬
+    c.save(); c.beginPath(); c.rect(ckX, top, ckW, hh); c.clip();
+    c.fillStyle = 'rgba(150,90,20,.18)';
+    for (let x = 0; x < ckW; x += 7) c.fillRect(ckX + x, top, 2, hh);
+    c.restore();
+    c.restore();
+  }
+  for (const k of ['A','B']) drawChar(c, k);
+  drawBubble(c, 'A'); drawBubble(c, 'B');
+  drawParticles(c);
+  if (S.k >= 1){ c.fillStyle = msgColor; c.font = `${parseFloat(getComputedStyle(msg).fontSize)}px Jua, sans-serif`; c.textAlign = 'center'; c.textBaseline = 'top'; c.fillText(msg.textContent, W / 2, 34); }
+}
+function drawChar(c, k){
+  const box = el[k], left = parseFloat(box.style.left), top = parseFloat(box.style.top);
+  const picH = ch, img = $('img' + k);
+  c.save(); c.translate(left + cw / 2, top + ch); c.translate(-cw / 2, -ch + S.bob);
+  if (img.naturalWidth){
+    const sc = Math.min(cw / img.naturalWidth, picH / img.naturalHeight), dw = img.naturalWidth * sc, dh = img.naturalHeight * sc;
+    c.save(); c.translate(cw / 2 + (k === 'A' ? 1 : -1) * (cw / 2 - dw / 2), picH / 2 - S.hop); if (flip[k]) c.scale(-1, 1); c.drawImage(img, -dw / 2, -dh / 2, dw, dh); c.restore();
+  }
+  c.restore();
+}
+function recCanvas(){
+  const w = Math.round(Math.min(1080, W * 2) / 2) * 2, sc = w / W, h = Math.round(H * sc / 2) * 2;
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+  const c = cv.getContext('2d'); c.scale(w / W, h / H); return { cv, c };
+}
+function download(blob, name){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+}
+$('shot').onclick = () => {
+  const { cv, c } = recCanvas(); drawFrame(c, cv.width / W);
+  cv.toBlob(b => b && download(b, 'pepero-day.png'), 'image/png');
+};
+
+let rec = null, lastVideo = null;
+const MIMES = ['video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+const IN_APP = /KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|Line\/|DaumApps/i.test(navigator.userAgent);
+function vmsg(t){ $('vst').textContent = t; $('vst').hidden = !t; }
+function vidBtnReset(){ $('vid').disabled = false; $('vid').textContent = '🎬 영상 저장'; }
+function failRec(t){
+  if (rec){ rec.aborted = true; try { if (rec.mr && rec.mr.state !== 'inactive') rec.mr.stop(); } catch (e){} rec = null; }
+  vidBtnReset(); vmsg(t);
+}
+function showVideo(blob, ext){
+  if (lastVideo && lastVideo.url) URL.revokeObjectURL(lastVideo.url);
+  lastVideo = { blob, ext, url: URL.createObjectURL(blob) };
+  $('rv').src = lastVideo.url;
+  $('rsave').href = lastVideo.url; $('rsave').download = `pepero-day.${ext}`;
+  $('result').hidden = false; $('result').scrollIntoView({ behavior:'smooth', block:'center' });
+}
+function loadScript(src){
+  return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error('load')); document.head.appendChild(el); });
+}
+async function loadMuxer(){
+  if (window.Mp4Muxer) return;
+  for (const u of ['https://cdn.jsdelivr.net/npm/mp4-muxer@5/build/mp4-muxer.js', 'https://unpkg.com/mp4-muxer@5/build/mp4-muxer.js']){
+    try { await loadScript(u); if (window.Mp4Muxer) return; } catch (e){}
+  }
+  throw new Error('muxer');
+}
+const nextTick = () => new Promise(r => setTimeout(r, 0));
+
+/* 영상 저장(정밀 방식): 실시간 녹화 대신 한 프레임씩 직접 계산해서 mp4로 인코딩.
+   소리도 '몇 초에 어떤 소리'인지 기록해서 같은 시간축으로 합성하므로 기기 성능과 상관없이 싱크가 정확함 */
+const FPS = 30;
+async function recordOffline(progress){
+  if (!window.VideoEncoder || !window.VideoFrame) throw new Error('webcodecs');
+  const wantAudio = soundOn;
+  if (wantAudio && !(window.AudioEncoder && window.AudioData && window.OfflineAudioContext)) throw new Error('audio-webcodecs');
+  await loadMuxer();
+  if (wantAudio){ await loadSounds(); if (!crunchBuf || !kissBuf) throw new Error('sound'); }
+
+  const { cv, c } = recCanvas(), w = cv.width, h = cv.height;
+  let vcfg = null;
+  for (const codec of ['avc1.640032', 'avc1.4d0032', 'avc1.42003e']){
+    const cfg = { codec, width:w, height:h, bitrate:5e6, framerate:FPS, avc:{ format:'avc' } };
+    try { const r = await VideoEncoder.isConfigSupported(cfg); if (r && r.supported){ vcfg = cfg; break; } } catch (e){}
+  }
+  if (!vcfg) throw new Error('vcodec');
+  const SR = 48000, acfg = { codec:'mp4a.40.2', sampleRate:SR, numberOfChannels:2, bitrate:128000 };
+  if (wantAudio){ const r = await AudioEncoder.isConfigSupported(acfg); if (!r || !r.supported) throw new Error('acodec'); }
+
+  const target = new Mp4Muxer.ArrayBufferTarget();
+  const muxer = new Mp4Muxer.Muxer({
+    target, fastStart:'in-memory',
+    video:{ codec:'avc', width:w, height:h },
+    audio: wantAudio ? { codec:'aac', numberOfChannels:2, sampleRate:SR } : undefined
+  });
+  let encErr = null;
+  const venc = new VideoEncoder({ output:(ch, meta) => muxer.addVideoChunk(ch, meta), error:e => { encErr = e; } });
+  venc.configure(vcfg);
+
+  offl = { t:0, ev:[] };
+  rec = { offline:true, ctx:c, sc:w / W, aborted:false, mr:null };
+  S.playing = true; S.cAcc = 0; S.cNext = 0; setPlayBtn(true);
+  const dt = 1 / FPS, MAXF = FPS * 120;
+  let frame = 0, holdEnd = -1;
+  while (true){
+    if (!rec || rec.aborted) throw new Error('aborted');
+    if (encErr) throw encErr;
+    offl.t = frame * dt;
+    simStep(dt);                                   // 화면 상태 1프레임 진행 + rec.ctx에 그리기
+    const vf = new VideoFrame(cv, { timestamp: Math.round(frame * 1e6 / FPS), duration: Math.round(1e6 / FPS) });
+    venc.encode(vf, { keyFrame: frame % FPS === 0 }); vf.close();
+    frame++;
+    if (!S.playing && holdEnd < 0) holdEnd = frame + Math.round(1.5 * FPS);
+    if (holdEnd >= 0 && frame >= holdEnd && !particles.length && !(S.popped && S.hopT < .9)) break;
+    if (frame >= MAXF) break;
+    if (frame % 3 === 0 || venc.encodeQueueSize > 6){
+      progress(Math.min(90, Math.round(S.p * 85)));
+      while (venc.encodeQueueSize > 12) await nextTick();
+      await nextTick();
+    }
+  }
+  progress(92); await venc.flush(); venc.close();
+  if (encErr) throw encErr;
+
+  if (wantAudio){
+    const total = frame / FPS, oc = new OfflineAudioContext(2, Math.ceil(total * SR), SR);
+    const om = oc.createGain(); om.gain.value = .9; om.connect(oc.destination);
+    for (const e of offl.ev){
+      const buf = e.kind === 'c' ? crunchBuf : kissBuf;
+      schedClip(oc, om, e.t, buf, e.off, e.dur || buf.duration, e.gain, e.pan, e.fade, e.rate);
+    }
+    const ab = await oc.startRendering();
+    const aenc = new AudioEncoder({ output:(ch, meta) => muxer.addAudioChunk(ch, meta), error:e => { encErr = e; } });
+    aenc.configure(acfg);
+    const L = ab.getChannelData(0), R = ab.getChannelData(1), N = ab.length, BL = 4800;
+    for (let st = 0; st < N; st += BL){
+      const n = Math.min(BL, N - st), data = new Float32Array(n * 2);
+      data.set(L.subarray(st, st + n), 0); data.set(R.subarray(st, st + n), n);
+      const ad = new AudioData({ format:'f32-planar', sampleRate:SR, numberOfFrames:n, numberOfChannels:2, timestamp: Math.round(st / SR * 1e6), data });
+      aenc.encode(ad); ad.close();
+      if (aenc.encodeQueueSize > 20) await nextTick();
+    }
+    progress(97); await aenc.flush(); aenc.close();
+    if (encErr) throw encErr;
+  }
+  muxer.finalize();
+  const blob = new Blob([target.buffer], { type:'video/mp4' });
+  if (blob.size < 2000) throw new Error('empty');
+  return blob;
+}
+async function startRecording(withAudio){
+  reset(); initAudio(); vmsg('');
+  $('vid').disabled = true; $('vid').textContent = '🎬 영상 만드는 중… 0%'; $('result').hidden = true;
+  let aborted = false;
+  try {
+    offl = { t:0, ev:[] };                          // 준비 중에 실시간 루프가 끼어들지 못하게 먼저 표시
+    const blob = await recordOffline(pc => { $('vid').textContent = `🎬 영상 만드는 중… ${pc}%`; });
+    offl = null; rec = null; vidBtnReset(); showVideo(blob, 'mp4');
+    return;
+  } catch (e){
+    aborted = !!(rec && rec.aborted);
+    console.warn('정밀 영상 저장 실패 → 실시간 녹화로 전환:', e);
+  }
+  offl = null; rec = null; S.playing = false; setPlayBtn(false);
+  if (aborted){ vidBtnReset(); return; }
+  startRealtime(withAudio);
+}
+function startRealtime(withAudio){
+  reset(); initAudio();
+  try {
+    const { cv, c } = recCanvas(), stream = cv.captureStream(30);
+    const useAudio = !!(withAudio && soundOn && recDest && recDest.stream.getAudioTracks().length);
+    if (useAudio) recDest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+    let mr = null, mime = '';
+    const sup = window.MediaRecorder.isTypeSupported ? MIMES.filter(t => MediaRecorder.isTypeSupported(t)) : [];
+    for (const t of sup.concat([''])){
+      try { mr = new MediaRecorder(stream, t ? { mimeType:t, videoBitsPerSecond:4e6 } : undefined); mime = t; break; } catch (e){}
+    }
+    if (!mr) throw new Error('recorder');
+    const chunks = [];
+    mr.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+    mr.onerror = () => failRec('녹화 중 오류가 났어요. 다시 시도해 주세요.');
+    mr.onstop = () => {
+      const was = rec; rec = null; vidBtnReset();
+      if (!was || was.aborted) return;
+      const type = (mr.mimeType || mime || 'video/webm').split(';')[0], blob = new Blob(chunks, { type });
+      if (blob.size < 2000){
+        if (was.useAudio){ vmsg('소리 포함 녹화가 안 돼서 소리 없이 다시 녹화해요…'); setTimeout(() => startRealtime(false), 300); }
+        else vmsg('영상이 만들어지지 않았어요. 이 브라우저에서는 영상 저장이 어려울 수 있어요. 사진 저장을 쓰거나 크롬·사파리로 열어 주세요.');
+        return;
+      }
+      vmsg(was.withAudio && !was.useAudio && soundOn ? '이 브라우저에서는 소리 없이 저장됐어요.' : '');
+      showVideo(blob, type.includes('mp4') ? 'mp4' : 'webm');
+    };
+    rec = { mr, ctx:c, sc:cv.width / W, holdUntil:0, aborted:false, useAudio, withAudio };
+    $('vid').disabled = true; $('vid').textContent = '⏺ 녹화 중…'; $('result').hidden = true;
+    mr.start(500); start();
+  } catch (e){ failRec('영상 저장을 시작하지 못했어요. 사진 저장을 쓰거나 크롬·사파리로 열어 주세요.'); }
+}
+$('vid').onclick = () => {
+  if (rec) return;
+  vmsg('');
+  if ((!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) && !(window.VideoEncoder && window.VideoFrame)){
+    vmsg(IN_APP ? '카카오톡·네이버 같은 앱 안의 브라우저에서는 영상 저장이 안 돼요. 크롬이나 사파리로 열어 주세요.' : '이 브라우저는 영상 저장을 지원하지 않아요. 사진 저장을 이용해 주세요.');
+    return;
+  }
+  startRecording(true);
+};
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && rec){ abortRec(); vmsg('녹화 중에 화면을 벗어나서 취소됐어요. 화면을 켜 둔 채로 다시 눌러 주세요.'); }
+});
+if (IN_APP) vmsg('앱 안의 브라우저에서는 영상·사진 저장이 안 될 수 있어요. 크롬이나 사파리로 열어 보세요.');
+function finishRec(){ if (rec && rec.mr && rec.mr.state !== 'inactive') rec.mr.stop(); }
+function abortRec(){ if (!rec) return; rec.aborted = true; if (rec.mr && rec.mr.state !== 'inactive') rec.mr.stop(); }
+$('rclose').onclick = () => { $('result').hidden = true; $('rv').pause(); };
+
+/* ---------- 컨트롤 ---------- */
+$('play').onclick = () => S.playing ? pause() : start(); $('reset').onclick = reset;
+$('snd').onclick = () => {
+  soundOn = !soundOn; $('snd').textContent = soundOn ? '🔊 소리 켜짐' : '🔇 소리 꺼짐'; $('snd').classList.toggle('off', !soundOn);
+};
+['inA','inB','share','spd'].forEach(id => $(id).addEventListener('input', () => { updateLabels(); render(); }));
+document.querySelectorAll('input[name=choc]').forEach(r => r.addEventListener('change', () => { chocSide = r.value; updateLabels(); }));
+$('flipA').onchange = e => { flip.A = e.target.checked; render(); };
+$('flipB').onchange = e => { flip.B = e.target.checked; render(); };
+for (const k of ['A','B']) $('file' + k).onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  custom[k] = true; cropTransparent(URL.createObjectURL(f)).then(u => { $('img' + k).src = u; });
+};
+window.addEventListener('resize', () => { if (rec) return; metrics(); render(); });
+document.fonts && document.fonts.ready.then(() => { S.lay = {}; metrics(); render(); });
+
+try { initAudio(); } catch (e){}   // 효과음 파일을 미리 디코딩
+
+/* ---------- 하트 색 ---------- */
+const HEARTS = ['#ff5d8f','#ff4d4d','#ff9a3c','#ffd23f','#6fcf97','#5aa9ff','#9b7bff','#8a5a44'];
+function setHeart(k, col){
+  heartCol[k] = col; custom[k] = false; refreshHeart(k); $('hc' + k).value = col;
+  $('sw' + k).querySelectorAll('.sw').forEach(b => b.classList.toggle('on', b.dataset.c === col));
+  if (W) render();
+}
+for (const k of ['A','B']){
+  HEARTS.forEach(c => {
+    const b = document.createElement('button'); b.className = 'sw'; b.dataset.c = c; b.style.background = c;
+    b.setAttribute('aria-label', `${k} 하트 ${c}`); b.onclick = () => setHeart(k, c); $('sw' + k).insertBefore(b, $('hc' + k));
+  });
+  $('hc' + k).addEventListener('input', e => setHeart(k, e.target.value));
+  $('kao' + k).addEventListener('input', e => { kao[k] = e.target.value.trim(); custom[k] = false; refreshHeart(k); if (W) render(); });
+  setHeart(k, heartCol[k]);
+}
+
+/* ---------- 배경 색 ---------- */
+const SWATCHES = ['#ffe3e8','#d9ecff','#d8f5e4','#e8e0ff','#fff0c2','#ffd9c2','#2d2a4a'];
+function shade(hex, f){
+  const n = parseInt(hex.slice(1), 16), c = v => Math.max(0, Math.min(255, Math.round(v * (1 + f))));
+  return '#' + [c(n >> 16), c((n >> 8) & 255), c(n & 255)].map(v => v.toString(16).padStart(2, '0')).join('');
+}
+function setBg(hex){
+  bgColor = hex; floorColor = shade(hex, -.07);
+  const n = parseInt(hex.slice(1), 16), lum = (.299 * (n >> 16) + .587 * ((n >> 8) & 255) + .114 * (n & 255)) / 255;
+  msgColor = lum > .55 ? '#c8102e' : '#ffffff';
+  paintBg();
+  stage.style.setProperty('--sbg', bgColor); stage.style.setProperty('--sfl', floorColor); msg.style.color = msgColor;
+  $('bgPick').value = hex;
+  $('sws').querySelectorAll('.sw').forEach(b => b.classList.toggle('on', b.dataset.c === hex));
+  render();
+}
+SWATCHES.forEach(c => {
+  const b = document.createElement('button'); b.className = 'sw'; b.dataset.c = c; b.style.background = c; b.setAttribute('aria-label', '배경 ' + c);
+  b.onclick = () => setBg(c); $('sws').insertBefore(b, $('bgPick'));
+});
+$('bgPick').addEventListener('input', e => setBg(e.target.value));
+$('tiA').value = DEFAULT_THOUGHTS.A.join('\n'); $('tiB').value = DEFAULT_THOUGHTS.B.join('\n');
+['tiA','tiB'].forEach(id => $(id).addEventListener('input', () => { readThoughts(); render(); }));
+readThoughts();
+
+metrics(); updateLabels(); setBg(bgColor);
+</script>
+</body>
+</html>
