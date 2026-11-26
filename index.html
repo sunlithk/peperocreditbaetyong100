@@ -100,6 +100,17 @@ input[type=color]{width:46px; height:36px; padding:0; border:0; background:none;
 .result button.ghost{background:var(--pink); color:var(--red)}
 .result .dlbtn{font:inherit; font-size:16px; padding:9px 20px; border-radius:999px; background:var(--red); color:var(--white); text-decoration:none; display:inline-block; cursor:pointer; -webkit-tap-highlight-color:transparent}
 .result .vhint{font-size:12px; opacity:.6; margin-top:10px}
+.scrub{display:flex; align-items:center; gap:10px; color:var(--white); margin:14px 6px 0; font-size:15px}
+.scrub input{flex:1; accent-color:#ffd23f}
+.scrub .sv{min-width:44px; text-align:right}
+.frames{margin-top:12px; border-top:2px dashed #f2b8c2; padding-top:10px}
+.fh{font-size:16px; color:#000}
+.frow{display:flex; align-items:center; gap:8px; margin-top:8px}
+.frow img{width:40px; height:40px; object-fit:contain; background:var(--pink); border-radius:8px; flex:none}
+.frow input[type=range]{flex:1; min-width:0}
+.frow .at{min-width:52px; text-align:right; color:var(--red); font-size:14px}
+.frow button{font:inherit; font-size:14px; border:0; border-radius:50%; width:28px; height:28px; background:var(--pink); color:var(--red); cursor:pointer; flex:none}
+.addf{margin-top:8px}
 button:focus-visible,input:focus-visible,label:focus-within{outline:3px solid #ffd23f; outline-offset:2px}
 
 .panel{
@@ -158,6 +169,7 @@ input[type=range]{width:100%; accent-color:var(--red)}
     <button id="play">▶ 재생</button>
     <button id="reset">↺ 처음으로</button>
   </div>
+  <div class="scrub"><span>⏱ 미리보기</span><input type="range" id="scrub" min="0" max="100" value="0" aria-label="진행 위치 미리보기"><span class="sv" id="scrubVal">0%</span></div>
   <div class="bar second">
     <button id="snd" class="sub">🔊 소리 켜짐</button>
     <button id="shot" class="sub">📷 사진 저장</button>
@@ -191,6 +203,12 @@ input[type=range]{width:100%; accent-color:var(--red)}
         <label class="chk"><input type="checkbox" id="flipA"> 좌우 반전</label>
       </div>
       <div class="row"><label for="tiA">속마음 (한 줄에 하나, 3~5개)</label><textarea id="tiA"></textarea></div>
+      <div class="frames">
+        <div class="fh">🎞 표정·그림 바꾸기</div>
+        <div class="note">위에서 올린 그림이 처음(0%)이에요. 사진을 추가하고 막대를 움직여 바뀔 시점을 정하세요. 맨 오른쪽(100%)은 키스하는 순간!</div>
+        <div id="frA"></div>
+        <label class="file addf">＋ 장면 추가 (여러 장 가능)<input type="file" id="addA" accept="image/*" multiple></label>
+      </div>
     </div>
     <div class="who">
       <h2>오른쪽 캐릭터 B</h2>
@@ -200,6 +218,12 @@ input[type=range]{width:100%; accent-color:var(--red)}
         <label class="chk"><input type="checkbox" id="flipB"> 좌우 반전</label>
       </div>
       <div class="row"><label for="tiB">속마음 (한 줄에 하나, 3~5개)</label><textarea id="tiB"></textarea></div>
+      <div class="frames">
+        <div class="fh">🎞 표정·그림 바꾸기</div>
+        <div class="note">위에서 올린 그림이 처음(0%)이에요. 사진을 추가하고 막대를 움직여 바뀔 시점을 정하세요. 맨 오른쪽(100%)은 키스하는 순간!</div>
+        <div id="frB"></div>
+        <label class="file addf">＋ 장면 추가 (여러 장 가능)<input type="file" id="addB" accept="image/*" multiple></label>
+      </div>
     </div>
 
     <div class="full">
@@ -252,7 +276,12 @@ function heartImg(col, face){
   ${faceSvg}</svg>`;
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
 }
-function refreshHeart(k){ if (!custom[k]) $('img' + k).src = heartImg(heartCol[k], kao[k]); }
+const baseUrl = { A:null, B:null }, baseIm = { A:null, B:null }, frames = { A:[], B:[] };
+function setBase(k, url){
+  baseUrl[k] = url; baseIm[k] = null;
+  const im = new Image(); im.onload = () => { if (baseUrl[k] === url){ baseIm[k] = im; render(); } }; im.src = url;
+}
+function refreshHeart(k){ if (!custom[k]) setBase(k, heartImg(heartCol[k], kao[k])); }
 // 배경이 투명한 이미지는 비어 있는 가장자리를 잘라내서 그림 부분만 꽉 차게 사용
 function cropTransparent(url){
   return new Promise(res => {
@@ -281,12 +310,13 @@ function cropTransparent(url){
 }
 const flip = { A:false, B:false };
 for (const k of ['A','B']){
-  if (DEFAULT_IMG[k]){ custom[k] = true; cropTransparent(DEFAULT_IMG[k]).then(u => { $('img' + k).src = u; }); }
+  if (DEFAULT_IMG[k]){ custom[k] = true; cropTransparent(DEFAULT_IMG[k]).then(u => setBase(k, u)); }
   else refreshHeart(k);
 }
 $('inA').value = DEFAULT_NAME.A; $('inB').value = DEFAULT_NAME.B;
 
 const S = { p:0, k:0, playing:false, last:0, t:0, popped:false, bob:0, tilt:0, cAcc:0, cNext:0, hop:0, hopT:0, th:{A:null,B:null}, lay:{}, kissSound:false, acc:{A:0,B:0} };
+S.quiet = false; S.shown = { A:null, B:null }; S.curIm = { A:null, B:null };
 let bgColor = '#ffe3e8', floorColor = '#ffc9d3', msgColor = '#c8102e';
 const thoughts = { A:[], B:[] };
 const DEFAULT_THOUGHTS = {
@@ -521,8 +551,14 @@ function render(){
   $('imgA').style.objectPosition = flip.A ? 'left center' : 'right center';
   $('imgB').style.objectPosition = flip.B ? 'right center' : 'left center';
   updateThoughts('A'); updateThoughts('B');
-  if (k >= 1 && !S.popped){ S.popped = true; msg.textContent = `${$('inA').value || 'A'} 💋 ${$('inB').value || 'B'}  해피 빼빼로데이!`; hearts(eA); kissSound(); }
+  if (k >= 1 && !S.popped){ S.popped = true; msg.textContent = `${$('inA').value || 'A'} 💋 ${$('inB').value || 'B'}  해피 빼빼로데이!`; hearts(eA); if (!S.quiet) kissSound(); }
   msg.classList.toggle('show', k >= 1);
+  for (const q of ['A','B']){   // 진행도에 맞는 그림 고르기
+    const f = pickFrame(q);
+    if (f.url && S.shown[q] !== f.url){ $('img' + q).src = f.url; S.shown[q] = f.url; }
+    S.curIm[q] = f.im;
+  }
+  $('scrub').value = p * 100; $('scrubVal').textContent = Math.round(p * 100) + '%';
   fxc.setTransform(dpr, 0, 0, dpr, 0, 0); fxc.clearRect(0, 0, W, H); drawParticles(fxc);
   if (rec) drawFrame(rec.ctx, rec.sc);
 }
@@ -685,7 +721,7 @@ function drawFrame(c, sc = dpr){
 }
 function drawChar(c, k){
   const box = el[k], left = parseFloat(box.style.left), top = parseFloat(box.style.top);
-  const picH = ch, img = $('img' + k);
+  const picH = ch, img = (S.curIm[k] && S.curIm[k].naturalWidth) ? S.curIm[k] : $('img' + k);
   c.save(); c.translate(left + cw / 2, top + ch); c.translate(-cw / 2, -ch + S.bob);
   if (img.naturalWidth){
     const sc = Math.min(cw / img.naturalWidth, picH / img.naturalHeight), dw = img.naturalWidth * sc, dh = img.naturalHeight * sc;
@@ -893,10 +929,51 @@ $('flipA').onchange = e => { flip.A = e.target.checked; render(); };
 $('flipB').onchange = e => { flip.B = e.target.checked; render(); };
 for (const k of ['A','B']) $('file' + k).onchange = e => {
   const f = e.target.files[0]; if (!f) return;
-  custom[k] = true; cropTransparent(URL.createObjectURL(f)).then(u => { $('img' + k).src = u; });
+  custom[k] = true; cropTransparent(URL.createObjectURL(f)).then(u => setBase(k, u));
 };
 window.addEventListener('resize', () => { if (rec) return; metrics(); render(); });
 document.fonts && document.fonts.ready.then(() => { S.lay = {}; metrics(); render(); });
+
+/* ---------- 표정·그림 바꾸기 ---------- */
+function pickFrame(k){
+  const pos = (S.p >= 1 || S.popped) ? 100 : S.p * 100;
+  let f = { at:0, url:baseUrl[k], im:baseIm[k] };
+  for (const x of frames[k].slice().sort((a, b) => a.at - b.at)) if (x.at <= pos) f = x;
+  return f;
+}
+function previewAt(v){
+  if (rec) return;
+  if (S.playing){ S.playing = false; setPlayBtn(false); }
+  S.p = v / 100; S.k = v >= 100 ? 1 : 0;
+  if (v < 100){ S.popped = false; S.hopT = 0; particles = []; }
+  S.quiet = true; render(); S.quiet = false; kick();
+}
+$('scrub').addEventListener('input', e => previewAt(+e.target.value));
+function buildFrames(k){
+  const box = $('fr' + k); box.innerHTML = '';
+  if (!frames[k].length){ box.innerHTML = '<div class="note">아직 추가한 장면이 없어요.</div>'; return; }
+  frames[k].forEach(f => {
+    const row = document.createElement('div'); row.className = 'frow';
+    const th = document.createElement('img'); th.src = f.url; th.alt = '';
+    const rg = document.createElement('input'); rg.type = 'range'; rg.min = 1; rg.max = 100; rg.value = f.at; rg.setAttribute('aria-label', `${k} 장면이 바뀌는 시점`);
+    const lb = document.createElement('span'); lb.className = 'at';
+    const lab = () => { lb.textContent = f.at >= 100 ? '💋 키스' : f.at + '%'; };
+    rg.oninput = () => { f.at = +rg.value; lab(); previewAt(f.at); };
+    const del = document.createElement('button'); del.textContent = '✕'; del.setAttribute('aria-label', '장면 삭제');
+    del.onclick = () => { frames[k].splice(frames[k].indexOf(f), 1); buildFrames(k); render(); };
+    lab(); row.append(th, rg, lb, del); box.appendChild(row);
+  });
+}
+for (const k of ['A','B']) $('add' + k).onchange = e => {
+  const files = [...e.target.files]; e.target.value = '';
+  files.forEach(file => cropTransparent(URL.createObjectURL(file)).then(u => {
+    if (frames[k].length >= 8) return;
+    const im = new Image();
+    im.onload = () => { frames[k].push({ at:Math.min(100, 30 * (frames[k].length + 1)), url:u, im }); buildFrames(k); render(); };
+    im.src = u;
+  }));
+};
+buildFrames('A'); buildFrames('B');
 
 try { initAudio(); } catch (e){}   // 효과음 파일을 미리 디코딩
 
