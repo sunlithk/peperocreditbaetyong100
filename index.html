@@ -110,7 +110,10 @@ input[type=color]{width:46px; height:36px; padding:0; border:0; background:none;
 .move button{font:inherit; font-size:13px; border:0; border-radius:999px; padding:6px 12px; background:var(--pink); color:var(--red); cursor:pointer; justify-self:start}
 .frames{margin-top:12px; border-top:2px dashed #f2b8c2; padding-top:10px}
 .fh{font-size:16px; color:#000}
-.frow{display:flex; align-items:center; gap:8px; margin-top:8px}
+.frow{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:8px}
+.fmove{flex-basis:100%; display:flex; gap:10px; padding-left:48px; font-size:13px; color:#000}
+.fmove label{display:flex; align-items:center; gap:4px; flex:1; min-width:0}
+.fmove input{flex:1; min-width:0}
 .frow img{width:40px; height:40px; object-fit:contain; background:var(--pink); border-radius:8px; flex:none}
 .frow input[type=range]{flex:1; min-width:0}
 .frow .at{min-width:52px; text-align:right; color:var(--red); font-size:14px}
@@ -208,6 +211,7 @@ input[type=range]{width:100%; accent-color:var(--red)}
         <label class="chk"><input type="checkbox" id="flipA"> 좌우 반전</label>
       </div>
       <div class="move">
+        <div class="note">처음 올린 그림의 위치 (추가한 장면은 각자 따로 조절)</div>
         <label><span>↔ 좌우</span><input type="range" id="oxA" min="-50" max="50" value="0" aria-label="A 그림 좌우 위치"></label>
         <label><span>↕ 상하</span><input type="range" id="oyA" min="-30" max="30" value="0" aria-label="A 그림 상하 위치"></label>
         <button type="button" id="mvResetA">위치 되돌리기</button>
@@ -228,6 +232,7 @@ input[type=range]{width:100%; accent-color:var(--red)}
         <label class="chk"><input type="checkbox" id="flipB"> 좌우 반전</label>
       </div>
       <div class="move">
+        <div class="note">처음 올린 그림의 위치 (추가한 장면은 각자 따로 조절)</div>
         <label><span>↔ 좌우</span><input type="range" id="oxB" min="-50" max="50" value="0" aria-label="B 그림 좌우 위치"></label>
         <label><span>↕ 상하</span><input type="range" id="oyB" min="-30" max="30" value="0" aria-label="B 그림 상하 위치"></label>
         <button type="button" id="mvResetB">위치 되돌리기</button>
@@ -332,7 +337,7 @@ for (const k of ['A','B']){
 $('inA').value = DEFAULT_NAME.A; $('inB').value = DEFAULT_NAME.B;
 
 const S = { p:0, k:0, playing:false, last:0, t:0, popped:false, bob:0, tilt:0, cAcc:0, cNext:0, hop:0, hopT:0, th:{A:null,B:null}, lay:{}, kissSound:false, acc:{A:0,B:0} };
-S.quiet = false; S.shown = { A:null, B:null }; S.curIm = { A:null, B:null };
+S.quiet = false; S.shown = { A:null, B:null }; S.curIm = { A:null, B:null }; S.curOff = { A:{ x:0, y:0 }, B:{ x:0, y:0 } };
 let bgColor = '#ffe3e8', floorColor = '#ffc9d3', msgColor = '#c8102e';
 const thoughts = { A:[], B:[] };
 const DEFAULT_THOUGHTS = {
@@ -572,7 +577,8 @@ function render(){
   for (const q of ['A','B']){   // 진행도에 맞는 그림 고르기
     const f = pickFrame(q);
     if (f.url && S.shown[q] !== f.url){ $('img' + q).src = f.url; S.shown[q] = f.url; }
-    S.curIm[q] = f.im;
+    S.curIm[q] = f.im; S.curOff[q] = { x:f.dx || 0, y:f.dy || 0 };   // 그림마다 자기 위치를 따로 가짐
+    el[q].firstElementChild.style.transform = `translate(${S.curOff[q].x * cw / 100}px, ${S.curOff[q].y * ch / 100 - S.hop}px)`;
   }
   $('scrub').value = p * 100; $('scrubVal').textContent = Math.round(p * 100) + '%';
   fxc.setTransform(dpr, 0, 0, dpr, 0, 0); fxc.clearRect(0, 0, W, H); drawParticles(fxc);
@@ -741,7 +747,7 @@ function drawChar(c, k){
   c.save(); c.translate(left + cw / 2, top + ch); c.translate(-cw / 2, -ch + S.bob);
   if (img.naturalWidth){
     const sc = Math.min(cw / img.naturalWidth, picH / img.naturalHeight), dw = img.naturalWidth * sc, dh = img.naturalHeight * sc;
-    c.save(); c.translate(cw / 2 + (k === 'A' ? 1 : -1) * (cw / 2 - dw / 2) + off[k].x * cw / 100, picH / 2 - S.hop + off[k].y * ch / 100); if (flip[k]) c.scale(-1, 1); c.drawImage(img, -dw / 2, -dh / 2, dw, dh); c.restore();
+    c.save(); c.translate(cw / 2 + (k === 'A' ? 1 : -1) * (cw / 2 - dw / 2) + S.curOff[k].x * cw / 100, picH / 2 - S.hop + S.curOff[k].y * ch / 100); if (flip[k]) c.scale(-1, 1); c.drawImage(img, -dw / 2, -dh / 2, dw, dh); c.restore();
   }
   c.restore();
 }
@@ -944,9 +950,9 @@ document.querySelectorAll('input[name=choc]').forEach(r => r.addEventListener('c
 $('flipA').onchange = e => { flip.A = e.target.checked; render(); };
 $('flipB').onchange = e => { flip.B = e.target.checked; render(); };
 for (const k of ['A','B']){
-  $('ox' + k).addEventListener('input', e => { off[k].x = +e.target.value; render(); });
-  $('oy' + k).addEventListener('input', e => { off[k].y = +e.target.value; render(); });
-  $('mvReset' + k).onclick = () => { off[k].x = off[k].y = 0; $('ox' + k).value = 0; $('oy' + k).value = 0; render(); };
+  $('ox' + k).addEventListener('input', e => { off[k].x = +e.target.value; previewAt(0); });
+  $('oy' + k).addEventListener('input', e => { off[k].y = +e.target.value; previewAt(0); });
+  $('mvReset' + k).onclick = () => { off[k].x = off[k].y = 0; $('ox' + k).value = 0; $('oy' + k).value = 0; previewAt(0); };
 }
 for (const k of ['A','B']) $('file' + k).onchange = e => {
   const f = e.target.files[0]; if (!f) return;
@@ -958,7 +964,7 @@ document.fonts && document.fonts.ready.then(() => { S.lay = {}; metrics(); rende
 /* ---------- 표정·그림 바꾸기 ---------- */
 function pickFrame(k){
   const pos = (S.p >= 1 || S.popped) ? 100 : S.p * 100;
-  let f = { at:0, url:baseUrl[k], im:baseIm[k] };
+  let f = { at:0, url:baseUrl[k], im:baseIm[k], dx:off[k].x, dy:off[k].y };
   for (const x of frames[k].slice().sort((a, b) => a.at - b.at)) if (x.at <= pos) f = x;
   return f;
 }
@@ -982,7 +988,14 @@ function buildFrames(k){
     rg.oninput = () => { f.at = +rg.value; lab(); previewAt(f.at); };
     const del = document.createElement('button'); del.textContent = '✕'; del.setAttribute('aria-label', '장면 삭제');
     del.onclick = () => { frames[k].splice(frames[k].indexOf(f), 1); buildFrames(k); render(); };
-    lab(); row.append(th, rg, lb, del); box.appendChild(row);
+    const mv = document.createElement('div'); mv.className = 'fmove';
+    for (const [key, name, mn, mx] of [['dx', '↔', -50, 50], ['dy', '↕', -30, 30]]){
+      const l = document.createElement('label'), t = document.createElement('span'), r = document.createElement('input');
+      t.textContent = name; r.type = 'range'; r.min = mn; r.max = mx; r.value = f[key] || 0; r.setAttribute('aria-label', `${k} 장면 ${key === 'dx' ? '좌우' : '상하'} 위치`);
+      r.oninput = () => { f[key] = +r.value; previewAt(f.at); };
+      l.append(t, r); mv.appendChild(l);
+    }
+    lab(); row.append(th, rg, lb, del, mv); box.appendChild(row);
   });
 }
 for (const k of ['A','B']) $('add' + k).onchange = e => {
