@@ -103,6 +103,11 @@ input[type=color]{width:46px; height:36px; padding:0; border:0; background:none;
 .scrub{display:flex; align-items:center; gap:10px; color:var(--white); margin:14px 6px 0; font-size:15px}
 .scrub input{flex:1; accent-color:#ffd23f}
 .scrub .sv{min-width:44px; text-align:right}
+.move{margin-top:10px; display:grid; gap:6px}
+.move label{display:flex; align-items:center; gap:8px; font-size:14px; color:#000}
+.move label span{min-width:56px}
+.move input[type=range]{flex:1; min-width:0}
+.move button{font:inherit; font-size:13px; border:0; border-radius:999px; padding:6px 12px; background:var(--pink); color:var(--red); cursor:pointer; justify-self:start}
 .frames{margin-top:12px; border-top:2px dashed #f2b8c2; padding-top:10px}
 .fh{font-size:16px; color:#000}
 .frow{display:flex; align-items:center; gap:8px; margin-top:8px}
@@ -202,6 +207,11 @@ input[type=range]{width:100%; accent-color:var(--red)}
         <label class="file">이미지 올리기<input type="file" id="fileA" accept="image/*"></label>
         <label class="chk"><input type="checkbox" id="flipA"> 좌우 반전</label>
       </div>
+      <div class="move">
+        <label><span>↔ 좌우</span><input type="range" id="oxA" min="-50" max="50" value="0" aria-label="A 그림 좌우 위치"></label>
+        <label><span>↕ 상하</span><input type="range" id="oyA" min="-30" max="30" value="0" aria-label="A 그림 상하 위치"></label>
+        <button type="button" id="mvResetA">위치 되돌리기</button>
+      </div>
       <div class="row"><label for="tiA">속마음 (한 줄에 하나, 3~5개)</label><textarea id="tiA"></textarea></div>
       <div class="frames">
         <div class="fh">🎞 표정·그림 바꾸기</div>
@@ -216,6 +226,11 @@ input[type=range]{width:100%; accent-color:var(--red)}
       <div class="row">
         <label class="file">이미지 올리기<input type="file" id="fileB" accept="image/*"></label>
         <label class="chk"><input type="checkbox" id="flipB"> 좌우 반전</label>
+      </div>
+      <div class="move">
+        <label><span>↔ 좌우</span><input type="range" id="oxB" min="-50" max="50" value="0" aria-label="B 그림 좌우 위치"></label>
+        <label><span>↕ 상하</span><input type="range" id="oyB" min="-30" max="30" value="0" aria-label="B 그림 상하 위치"></label>
+        <button type="button" id="mvResetB">위치 되돌리기</button>
       </div>
       <div class="row"><label for="tiB">속마음 (한 줄에 하나, 3~5개)</label><textarea id="tiB"></textarea></div>
       <div class="frames">
@@ -309,6 +324,7 @@ function cropTransparent(url){
   });
 }
 const flip = { A:false, B:false };
+const off = { A:{ x:0, y:0 }, B:{ x:0, y:0 } };   // 그림 위치 (캐릭터 너비/높이의 %)
 for (const k of ['A','B']){
   if (DEFAULT_IMG[k]){ custom[k] = true; cropTransparent(DEFAULT_IMG[k]).then(u => setBase(k, u)); }
   else refreshHeart(k);
@@ -544,7 +560,7 @@ function render(){
   el.B.style.left = (eB - rc) + 'px';
   el.A.style.transform = `translateY(${S.bob}px)`;
   el.B.style.transform = `translateY(${S.bob}px)`;
-  el.A.firstElementChild.style.transform = el.B.firstElementChild.style.transform = `translateY(${-S.hop}px)`;
+  for (const q of ['A','B']) el[q].firstElementChild.style.transform = `translate(${off[q].x * cw / 100}px, ${off[q].y * ch / 100 - S.hop}px)`;
   $('imgA').style.transform = flip.A ? 'scaleX(-1)' : '';
   $('imgB').style.transform = flip.B ? 'scaleX(-1)' : '';
   // 이미지를 서로 마주 보는 가장자리에 붙여서, 끝에서 이미지끼리 딱 맞닿게 함
@@ -725,7 +741,7 @@ function drawChar(c, k){
   c.save(); c.translate(left + cw / 2, top + ch); c.translate(-cw / 2, -ch + S.bob);
   if (img.naturalWidth){
     const sc = Math.min(cw / img.naturalWidth, picH / img.naturalHeight), dw = img.naturalWidth * sc, dh = img.naturalHeight * sc;
-    c.save(); c.translate(cw / 2 + (k === 'A' ? 1 : -1) * (cw / 2 - dw / 2), picH / 2 - S.hop); if (flip[k]) c.scale(-1, 1); c.drawImage(img, -dw / 2, -dh / 2, dw, dh); c.restore();
+    c.save(); c.translate(cw / 2 + (k === 'A' ? 1 : -1) * (cw / 2 - dw / 2) + off[k].x * cw / 100, picH / 2 - S.hop + off[k].y * ch / 100); if (flip[k]) c.scale(-1, 1); c.drawImage(img, -dw / 2, -dh / 2, dw, dh); c.restore();
   }
   c.restore();
 }
@@ -927,6 +943,11 @@ $('snd').onclick = () => {
 document.querySelectorAll('input[name=choc]').forEach(r => r.addEventListener('change', () => { chocSide = r.value; updateLabels(); }));
 $('flipA').onchange = e => { flip.A = e.target.checked; render(); };
 $('flipB').onchange = e => { flip.B = e.target.checked; render(); };
+for (const k of ['A','B']){
+  $('ox' + k).addEventListener('input', e => { off[k].x = +e.target.value; render(); });
+  $('oy' + k).addEventListener('input', e => { off[k].y = +e.target.value; render(); });
+  $('mvReset' + k).onclick = () => { off[k].x = off[k].y = 0; $('ox' + k).value = 0; $('oy' + k).value = 0; render(); };
+}
 for (const k of ['A','B']) $('file' + k).onchange = e => {
   const f = e.target.files[0]; if (!f) return;
   custom[k] = true; cropTransparent(URL.createObjectURL(f)).then(u => setBase(k, u));
